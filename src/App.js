@@ -1,66 +1,85 @@
-import React, { Component } from 'react'
-import { BrowserRouter as Router, Route } from 'react-router-dom'
-import Header from './components/layout/Header'
-import Todos from './components/Todos'
-import AddTodo from './components/AddTodo'
-import About from './components/pages/About'
-
-// import { v4 as uuidv4 } from 'uuid';
+import React, { Component } from 'react';
+import logo from './logo.svg';
 import './App.css';
-import axios from 'axios'
-
+import NameCard from './components/NameCard'
+import LikesButton from './components/LikesButton'
+import DigitalClock from './components/DigitalClock'
+import CommentBox from './components/CommentBox'
+import CommentList from './components/CommentList'
+import ThemeContext from './theme-context'
+import ThemedBar from './components/ThemedBar'
+const tags = ['恐龙', '足球小子']
+const themes = {
+  light: {
+    classnames: 'btn btn-primary',
+    bgColor: '#eeeeee',
+    color: '#000'
+  },
+  dark: {
+    classnames: 'btn btn-light',
+    bgColor: '#222222',
+    color: '#fff'
+  }
+}
 class App extends Component {
-  /*function App() {*/
-  state = {
-    todos: []
+  constructor(props) {
+    super(props)
+    this.state = {
+      comments: ['this is my first reply'],
+      theme: 'light'
+    }
+    this.addComment = this.addComment.bind(this)
+    this.changeTheme = this.changeTheme.bind(this)
   }
-  componentDidMount() {
-    axios.get('https://jsonplaceholder.typicode.com/todos?_limit=10').then(res => {
-      this.setState({ todos: res.data })
-    })
-  }
-  // Toggle Complete
-  markComplete = (id) => {
+  addComment(comment) {
     this.setState({
-      todos: this.state.todos.map(todo => {
-        if (todo.id === id) {
-          todo.completed = !todo.completed
-        }
-        return todo
-      })
+      comments: [...this.state.comments, comment]
     })
   }
-
-  // Delete Todo
-  delTodo = (id) => {
-    axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`)
-      .then(res => this.setState({ todos: [...this.state.todos.filter(todo => todo.id !== id)] }))
+  changeTheme(theme) {
+    this.setState({
+      theme
+    })
   }
-
-  // Add Todo
-  addTodo = (title) => {
-    axios.post('https://jsonplaceholder.typicode.com/todos', {
-      title,
-      completed: false
-    }).then(res => this.setState({ todos: [...this.state.todos, res.data] }))
-  }
-
   render() {
+    const { comments } = this.state;
     return (
-      <Router>
+      <ThemeContext.Provider value={themes[this.state.theme]}>
         <div className="App">
-          <div className="container">
-            <Header />
-            <Route exact path="/" render={props => (
-              <React.Fragment>
-                <AddTodo addTodo={this.addTodo} />
-                <Todos todos={this.state.todos} markComplete={this.markComplete} delTodo={this.delTodo} />
-              </React.Fragment>
-            )} />
-            <Route path="/about" component={About} />
-          </div>
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <p>
+              Edit <code>src/App.js</code> and save to reload.
+        </p>
+            <a
+              className="App-link"
+              href="https://reactjs.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn React
+        </a>
+          </header>
+          {/* <NameCard name="king" number={12345} isHuman tags={tags} /> */}
+          <CommentList comments={comments} />
+          <CommentBox
+            commentsLength={comments.length}
+            onAddComment={this.addComment} />
+          <a href="#theme-switcher" className="btn btn-light"
+            onClick={() => {
+              this.changeTheme('light')
+            }}>
+            浅色主题
+          </a>
+          <a href="#theme-switcher" className="btn btn-secondary"
+            onClick={() => {
+              this.changeTheme('dark')
+            }}>
+            深色主题
+          </a>
+          <ThemedBar />
         </div>
-      </Router>
+      </ThemeContext.Provider>
     );
   }
 }
